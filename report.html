@@ -35,7 +35,9 @@
   </div>
 
   <script>
-    var API_URL = 'https://fmdhjgnyilcoaifcbabh.supabase.co/functions/v1/health-report';
+    var SUPABASE_URL = 'https://fmdhjgnyilcoaifcbabh.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZGhqZ255aWxjb2FpZmNiYWJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NTc1MjYsImV4cCI6MjA4ODQzMzUyNn0.rACq1n87C5d2ajQOJfWppqzvzC6ooLftS0pD-dG-wqA';
+
     var params = new URLSearchParams(window.location.search);
     var token = params.get('token');
 
@@ -47,11 +49,20 @@
 
     async function loadReport(t) {
       try {
-        var resp = await fetch(API_URL + '?token=' + t);
+        var resp = await fetch(
+          SUPABASE_URL + '/rest/v1/health_reports?access_token=eq.' + t + '&select=*',
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+            }
+          }
+        );
+
         if (!resp.ok) throw new Error('请求失败');
-        var report = await resp.json();
-        if (report.error) throw new Error(report.error);
-        render(report);
+        var reports = await resp.json();
+        if (reports.length === 0) throw new Error('没有记录');
+        render(reports[0]);
       } catch (e) {
         document.getElementById('app').innerHTML = '<div class="error">报告不存在或已过期</div>';
       }
